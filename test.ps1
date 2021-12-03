@@ -2,7 +2,7 @@
 [string]$cognitiveURL = "https://$apiRegion.api.cognitive.microsoft.com"
 [string]$ttsURL = "https://$apiRegion.tts.speech.microsoft.com"
 
-[string]$apiKey = Get-Content .\secret\apiKeyd
+[string]$apiKey = Get-Content .\secret\apiKey
 if(!($?)) {
     Show-Notification -Title "Could not read API key" -Text $error[0].exception.Message -Level "Error"
     return
@@ -43,9 +43,9 @@ if ($?) {
 
     [io.file]::WriteAllBytes($outFile, $a)
     if ($?) {
-        Write-Log "Unable to write '$outfile': $($error[0].exception.message)"
-    } else {
         Write-Log "Successfully wrote '$outfile'."
+    } else {
+        Write-Log "Unable to write '$outfile': $($error[0].exception.message)"
     }
 } else {
     Write-Log "Request failed: $($error[0].exception.message)"
