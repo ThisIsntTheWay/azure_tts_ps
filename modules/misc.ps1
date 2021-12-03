@@ -5,7 +5,8 @@ function Show-Notification {
             [string]$text,
         [string]$title = "Alert",
         [string]$level = "Info",
-        [int]$expiry = 60
+        [int]$expiry = 60,
+        [string]$filePath
     )
 
     [string]$iconFile = ".\toast\" + $level + ".png"
@@ -18,6 +19,22 @@ function Show-Notification {
     ($rawxml.GetElementsByTagName("text") | ? id -eq "1").AppendChild($RawXml.CreateTextNode($Title)) > $null
     ($rawxml.GetElementsByTagName("text") | ? id -eq "2").AppendChild($RawXml.CreateTextNode($Text)) > $null
     ($rawxml.GetElementsByTagName("image") | ? id -eq "1").src = (Get-Item $iconFile).Fullname
+
+    if ($filePath) {
+        # Convert path to # file:///
+        $fileURI = $filepath -replace "\\", "/" -replace " ", "%20"
+        $fileURI = "file:///" + $filepath
+
+        #https://docs.microsoft.com/en-us/windows/apps/design/shell/tiles-and-notifications/toast-schema#itoastactions
+        $actions = $rawXML.CreateNode("element", "actions", "")
+            $action = $rawXML.CreateNode("element", "action", "")
+            $action.SetAttribute("arguments", $fileURI)
+            $action.SetAttribute("content", "Access file")
+            $action.SetAttribute("activationType", "protocol")
+
+        $actions.AppendChild($action)
+        ($rawXML.toast).AppendChild($actions)
+    }
 
     $SerializedXml = New-Object Windows.Data.Xml.Dom.XmlDocument
     $SerializedXml.LoadXml($RawXml.OuterXml)

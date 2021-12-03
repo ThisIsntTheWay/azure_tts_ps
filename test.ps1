@@ -26,7 +26,7 @@ $voiceInfo = [PSCustomObject]@{
     "Gender" = $voiceChoice.gender
     "Name" = $voiceChoice.ShortName
     "Codec" = $voiceCodec.types[0]
-    "Text" = "Hello World"
+    "Text" = "Hello, my name is $($voiceChoice.LocalName)"
 }
 
 Write-Log "[i] Requesting content with the following info:"
@@ -34,8 +34,6 @@ Write-Log "$($voiceInfo | convertto-json)" $true
 
 $a = Create-AzureTTSAudio $voiceInfo
 if ($?) {
-    Show-Notification -title "Request OK" -text "TTS generation successful."
-
     $count = 0 + ((gci .\output).count + 1)
 
     if (!(Test-Path ".\output")) { mkdir .\output | out-null }
@@ -43,8 +41,10 @@ if ($?) {
 
     [io.file]::WriteAllBytes($outFile, $a)
     if ($?) {
+        Show-Notification -title "Request OK" -text "TTS generation successful." -filePath (gci $outFile).Fullname
         Write-Log "Successfully wrote '$outfile'."
     } else {
+        Show-Notification -title "Could not write file" -text $error[0].exception.message -level "Error"
         Write-Log "Unable to write '$outfile': $($error[0].exception.message)"
     }
 } else {
