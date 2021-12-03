@@ -41,7 +41,7 @@ if ($?) {
 
     [io.file]::WriteAllBytes($outFile, $a)
     if ($?) {
-        Show-Notification -title "Request OK" -text "TTS generation successful." -filePath (gci $outFile).Fullname
+        Show-Notification -title "Request OK" -text "TTS generation successful." -filePath (gci $outfile).directory.fullname #(gci $outFile).Fullname
         Write-Log "Successfully wrote '$outfile'."
     } else {
         Show-Notification -title "Could not write file" -text $error[0].exception.message -level "Error"

@@ -22,17 +22,26 @@ function Show-Notification {
 
     if ($filePath) {
         # Convert path to # file:///
-        $fileURI = $filepath -replace "\\", "/" -replace " ", "%20"
-        $fileURI = "file:///" + $filepath
+        $fileURI = $filepath.fullname -replace "\\", "/" -replace " ", "%20"
+        $fileURI = "file:///" + $fileURI
+        
+        $dirURI = $filepath.directory[0].fullname -replace "\\", "/" -replace " ", "%20"
+        $dirURI = "file:///" + $dirURI
 
         #https://docs.microsoft.com/en-us/windows/apps/design/shell/tiles-and-notifications/toast-schema#itoastactions
         $actions = $rawXML.CreateNode("element", "actions", "")
             $action = $rawXML.CreateNode("element", "action", "")
             $action.SetAttribute("arguments", $fileURI)
-            $action.SetAttribute("content", "Access file")
+            $action.SetAttribute("content", "Open file")
             $action.SetAttribute("activationType", "protocol")
+            
+            $action2 = $rawXML.CreateNode("element", "action", "")
+            $action2.SetAttribute("arguments", $dirURI)
+            $action2.SetAttribute("content", "Open folder")
+            $action2.SetAttribute("activationType", "protocol")
 
         $actions.AppendChild($action)
+        $actions.AppendChild($action2)
         ($rawXML.toast).AppendChild($actions)
     }
 
