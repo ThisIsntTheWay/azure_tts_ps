@@ -139,20 +139,20 @@ function Create-AzureTTSAudio {
     )
 
     # Assemble SSML
-    [XML]$SSML = ""
-    $speak = $SSML.CreateNode("element", "speak", "")
-        $speak.setAttribute("version", "1.0")
-        $speak.setAttribute("xmlns", "http://www.w3.org/2001/10/synthesis")
-        $speak.setAttribute("xml:lang", $VoiceInfo.Locale)
-    
-    $voice = $SSML.CreateNode("element", "voice", "")
-        $voice.setAttribute("name", $voiceInfo.Name)
-        $voice.InnerText = $voiceInfo.Text
-    
-    $speak.AppendChild($voice) | Out-Null
-    $SSML.AppendChild($speak) | Out-Null
+    $xml = @"
+<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="%LOCALE%">
+    <voice name="%NAME%">
+        %TEXT%
+    </voice>
+</speak>
+"@
+    $SSML = $xml -Replace "%LOCALE%", $VoiceInfo.Locale `
+                -Replace "%NAME%", $VoiceInfo.Name `
+                -Replace "%TEXT%", $VoiceInfo.Text
 
-    $a = Invoke-WebRequest ($ttsURL + "/cognitiveservices/v1") -Method POST -Body $SSML -Headers @{
+    $body = [System.Text.Encoding]::UTF8.GetBytes($SSML)
+
+    $a = Invoke-WebRequest ($ttsURL + "/cognitiveservices/v1") -Method POST -Body $body -Headers @{ #
         'Authorization' = (Get-AzureSpeechServiceToken).Auth
         'Content-Type' = 'application/ssml+xml'
         'X-Microsoft-OutputFormat' = $voiceInfo.Codec
