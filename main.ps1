@@ -87,7 +87,7 @@ $voiceInfo = [PSCustomObject]@{
     "Gender" = $voiceChoice.gender
     "Name" = $voiceChoice.ShortName
     "Codec" = $voiceCodec.types[$CodecQuality]
-    "Text" = $text
+    "Text" = [string]$text
 }
 
 Write-Log "[i] Requesting content with the following info:"
