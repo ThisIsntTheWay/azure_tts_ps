@@ -76,10 +76,9 @@ function Get-AzureSpeechServiceToken {
         'Ocp-Apim-Subscription-Key' = $apiKey
         'Content-Type' = 'application/x-www-form-urlencoded'
     }
-
     if (!($?)) {
         Show-Notification -Title "OAuth token acquisition failure" -Text $error[0].exception.Message -Level "Error"
-        return
+        exit
     }
 
     $returnObj = [PSCustomObject]@{
@@ -114,7 +113,7 @@ function Get-AzureTTSVoices {
     $a = Invoke-RestMethod ($ttsURL + "/cognitiveservices/voices/list") -Method GET -Headers @{ 'Ocp-Apim-Subscription-Key' = $apiKey }
     if (!($?)) {
         Show-Notification -Title "Voice list acquisition failure" -Text $error[0].exception.Message -Level "Error"
-        return
+        exit
     }
 
     if ($onlyNeural) {
@@ -160,7 +159,7 @@ function Create-AzureTTSAudio {
     }
     if (!($?)) {
         Show-Notification -Title "Voice acquisition failure" -Text $error[0].exception.Message -Level "Error"
-        return
+        exit
     } else {
         return $a.content
     }
