@@ -1,0 +1,1 @@
+.\main.ps1 -apiKey .\secret\apiKey -voice "Natasha" -text "Hello world" -codec "webm" -quiet $false
