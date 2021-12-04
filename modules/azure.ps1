@@ -123,7 +123,6 @@ function Get-AzureTTSVoices {
     }
 }
 
-
 <#
     .SYNOPSIS
         Creates a TTS voice file.
@@ -152,7 +151,7 @@ function Create-AzureTTSAudio {
 
     $body = [System.Text.Encoding]::UTF8.GetBytes($SSML)
 
-    $a = Invoke-WebRequest ($ttsURL + "/cognitiveservices/v1") -Method POST -Body $body -Headers @{ #
+    $a = Invoke-WebRequest ($ttsURL + "/cognitiveservices/v1") -Method POST -Body $body -Headers @{
         'Authorization' = (Get-AzureSpeechServiceToken).Auth
         'Content-Type' = 'application/ssml+xml'
         'X-Microsoft-OutputFormat' = $voiceInfo.Codec

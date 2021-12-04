@@ -17,7 +17,7 @@ Param(
     [parameter(Mandatory = $true, HelpMessage = "Name of voice to use. Uses 'DisplayName' param of .\voiceList.json.", Position = 1)]
         [string]$voice,
 
-    [parameter(Mandatory = $true, HelpMessage = "Text to synthesize, can be pipelined", ValueFromPipeline = $true, Position = 2)]
+    [parameter(Mandatory = $true, HelpMessage = "Text to synthesize, can be pipelined.", ValueFromPipeline = $true, Position = 2)]
         $text,
 
     [parameter(Mandatory = $false, HelpMessage = "Audio codec type. (audio, webm, riff, ogg, raw)", Position = 3)]
@@ -30,7 +30,7 @@ Param(
     [parameter(Mandatory = $false, HelpMessage = "Show notification bubbles or not.", Position = 5)]
         [bool]$Quiet = $false,
         
-    [parameter(Mandatory = $false, HelpMessage = "API region", Position = 6)]
+    [parameter(Mandatory = $false, HelpMessage = "API region.", Position = 6)]
         [string]$apiRegion = "northeurope"
 )
 
