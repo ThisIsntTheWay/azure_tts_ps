@@ -91,7 +91,7 @@ function Write-Log {
     )
 
     $now = get-date -format "dd/mm/yyyy HH:mm:ss"
-    $outFile = ".\log\log_$(Get-Date -f "ddMMyyyy").txt"
+    $outFile = ".\log\log_$(Get-Date -f "yyyyMMdd").txt"
 
     if (!(Test-Path ".\log")) { 
         mkdir .\log | out-null
