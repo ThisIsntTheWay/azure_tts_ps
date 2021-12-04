@@ -139,15 +139,19 @@ function Create-AzureTTSAudio {
             [PSCustomObject]$VoiceInfo
     )
 
-    [XML]$SSML = (Get-Content .\xmlTemplate.xml) `
-        -Replace "%LOCALE%", $voiceInfo.Locale `
-        -Replace "%NAME%", $voiceInfo.Name `
-        -Replace "%GENDER%", $voiceInfo.Gender `
-        -Replace "%TEXT%", $voiceInfo.Text
-    if(!($?)) {
-        Show-Notification -Title "Unable to parse voice XML template" -Text $error[0].exception.Message -Level "Error"
-        return
-    }
+    # Assemble SSML
+    [XML]$SSML = ""
+    $speak = $SSML.CreateNode("element", "speak", "")
+        $speak.setAttribute("version", "1.0")
+        $speak.setAttribute("xmlns", "http://www.w3.org/2001/10/synthesis")
+        $speak.setAttribute("xml:lang", $VoiceInfo.Locale)
+    
+    $voice = $SSML.CreateNode("element", "voice", "")
+        $voice.setAttribute("name", $voiceInfo.Name)
+        $voice.InnerText = $voiceInfo.Text
+    
+    $speak.AppendChild($voice) | Out-Null
+    $SSML.AppendChild($speak) | Out-Null
 
     $a = Invoke-WebRequest ($ttsURL + "/cognitiveservices/v1") -Method POST -Body $SSML -Headers @{
         'Authorization' = (Get-AzureSpeechServiceToken).Auth
