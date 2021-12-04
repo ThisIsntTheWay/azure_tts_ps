@@ -102,4 +102,8 @@ if ($?) {
     Write-Log "Request failed: $($error[0].exception.message)"
 }
 
-return $a
+return @{
+    "filePath" = (gci $outFile)
+    "rawAudio" = $a
+    "metadata" = $voiceInfo
+}
