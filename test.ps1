@@ -41,7 +41,7 @@ if ($?) {
 
     [io.file]::WriteAllBytes($outFile, $a)
     if ($?) {
-        Show-Notification -title "Request OK" -text "TTS generation successful." -filePath (gci $outfile).directory.fullname #(gci $outFile).Fullname
+        Show-Notification -title "Request OK" -text "TTS generation successful." -filePath (gci $outFile)
         Write-Log "Successfully wrote '$outfile'."
     } else {
         Show-Notification -title "Could not write file" -text $error[0].exception.message -level "Error"
@@ -49,6 +49,11 @@ if ($?) {
     }
 } else {
     Write-Log "Request failed: $($error[0].exception.message)"
+}
+
+function test($e) {
+    $e.fullname
+    $e.directory.fullname
 }
 
 # Ref: https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/rest-text-to-speech

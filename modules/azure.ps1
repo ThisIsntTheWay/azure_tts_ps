@@ -1,3 +1,10 @@
+Param(
+    [parameter(Mandatory = $true)]
+        [string]$apiRegion
+)
+
+[string]$cognitiveURL = "https://$apiRegion.api.cognitive.microsoft.com"
+[string]$ttsURL = "https://$apiRegion.tts.speech.microsoft.com"
 [PSCustomObject]$azureTTSAudio = @{
     "riff" = @{
         "suffix" = "riff"
@@ -51,7 +58,20 @@
     }
 }
 
-function Get-AzureTTSToken {
+# Ref: https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/rest-text-to-speech
+
+<#
+    .SYNOPSIS
+        Obtains an OAuth token for Azure Speech Services.
+    .OUTPUTS
+        Returns a [PSCustomObject] with the following values:
+        - Expiration date of token ("Expriy")
+        - Token in format for authorization header ("Auth")
+        - Raw token ("Value")
+        - Method for determining validy of token (isExpired())
+            > Returns a [bool]
+#>
+function Get-AzureSpeechServiceToken {
     $token = Invoke-RestMethod ($cognitiveURL + "/sts/v1.0/issueToken") -Method POST -Headers @{
         'Ocp-Apim-Subscription-Key' = $apiKey
         'Content-Type' = 'application/x-www-form-urlencoded'
@@ -79,6 +99,13 @@ function Get-AzureTTSToken {
     return $returnObj
 }
 
+<#
+    .SYNOPSIS
+        Obtains a list of valid voices for the Azure TTS service.
+    .PARAMETER onlyNeural
+        Only returns "neural" voices.
+        Defaults to $true.
+#>
 function Get-AzureTTSVoices {
     Param(
         $onlyNeural = $true
@@ -97,6 +124,15 @@ function Get-AzureTTSVoices {
     }
 }
 
+
+<#
+    .SYNOPSIS
+        Creates a TTS voice file.
+    .PARAMETER VoiceInfo
+        [PSCustomObject] of voice information for the Azure TTS service.
+    .OUTPUTS
+        Returns byte[] data of the audio.
+#>
 function Create-AzureTTSAudio {
     Param(
         [parameter(Mandatory = $true)]
@@ -114,7 +150,7 @@ function Create-AzureTTSAudio {
     }
 
     $a = Invoke-WebRequest ($ttsURL + "/cognitiveservices/v1") -Method POST -Body $SSML -Headers @{
-        'Authorization' = (Get-AzureTTSToken).Auth
+        'Authorization' = (Get-AzureSpeechServiceToken).Auth
         'Content-Type' = 'application/ssml+xml'
         'X-Microsoft-OutputFormat' = $voiceInfo.Codec
     }
