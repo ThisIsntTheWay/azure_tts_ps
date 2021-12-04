@@ -1,3 +1,15 @@
+<#
+    .SYNOPSIS
+        Synthesizes text to speech using Azure Speech Services.
+        This synthesized text will then be stored as a file under '.\output\<filename>'.
+    .OUTPUTS
+        Returns an object with the following properties:
+        > "filePath" - Path to the file that was created
+        > "requestTime" - Amount of time that was spent creating the TTS file.
+            > This only includes the time spent REQUESTING and fully RECEIVING TTS data.
+        > "rawAudio" - Byte[] of the audio returned by Azure.
+        > "metadata" - Data such as speaker, locale, text etc.
+#>
 Param(
     [parameter(Mandatory = $true, HelpMessage = "Path to API key.", Position = 0)]
         [string]$apiKeyPath,
