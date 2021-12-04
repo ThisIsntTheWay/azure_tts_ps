@@ -28,7 +28,10 @@ Param(
         [int]$CodecQuality = 0,
 
     [parameter(Mandatory = $false, HelpMessage = "Show notification bubbles or not.", Position = 5)]
-        [bool]$Quiet = $false
+        [bool]$Quiet = $false,
+        
+    [parameter(Mandatory = $false, HelpMessage = "API region", Position = 6)]
+        [string]$apiRegion = "northeurope"
 )
 
 # ------------------------
@@ -41,8 +44,30 @@ if (!($?)) { Write-Host "Could not load Azure ps1 module:" -fore red; throw $($e
 if (!($?)) { Write-Host "Could not load auxilliary ps1 module:" -fore red; throw $($error[0].Exception.Message) }
 
 # ------------------------
+# Variables
+# ------------------------
+$scriptRegData = "HKCU:\SOFTWARE\AzureSpeechServices\"
+
+# ------------------------
 # Main
 # ------------------------
+# Set up registry data
+if (!(Test-path $scriptRegData)) {
+    mkdir $scriptRegData | Out-Null
+}
+
+if ((Get-ItemProperty $scriptRegData).billingCurrency -eq $null) {
+    Set-ItemProperty $scriptRegData -name "billingCurrency" -value "USD" -type String -Force | Out-Null
+}
+
+if ((Get-ItemProperty $scriptRegData).billableCharactersNeural -eq $null) {
+    Set-ItemProperty $scriptRegData -name "billableCharactersNeural" -value 0 -type Dword -Force | Out-Null
+}
+
+if ((Get-ItemProperty $scriptRegData).billableCharactersStandard -eq $null) {
+    Set-ItemProperty $scriptRegData -name "billableCharactersStandard" -value 0 -type Dword -Force | Out-Null
+}
+
 [string]$apiKey = Get-Content $apiKeyPath
 if(!($?)) {
     Create-Notifications -text "Could not read API key: $($error[0].exception.Message)" -title "Error" -notificationLevel "error" -noBubble $true
@@ -98,6 +123,16 @@ $timer =  [system.diagnostics.stopwatch]::StartNew()
 $a = Create-AzureTTSAudio $voiceInfo
 if ($?) {
     $timer.Stop()
+
+    # Update registry
+    $charCount = $voiceInfo.Text.Length
+    if ($voiceChoice.VoiceType -eq "Neural") {
+        $e = (Get-ItemProperty $scriptRegData)."billableCharactersNeural"
+        Set-ItemProperty $scriptRegData -name "billableCharactersNeural" -value ($e + $charCount) -type Dword -Force | Out-Null
+    } else {
+        $e = (Get-ItemProperty $scriptRegData)."billableCharactersStandard"
+        Set-ItemProperty $scriptRegData -name "billableCharactersStandard" -value ($e + $charCount) -type Dword -Force | Out-Null
+    }
 
     $count = 0 + ((gci .\output).count + 1)
 
