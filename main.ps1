@@ -155,9 +155,7 @@ if ($?) {
 
 return @{
     "filePath" = (gci $outFile)
-    "requestTime" = $timer | select @{N = "Time"; E = {$_.Elapsed}},
-        @{N = "Millis"; E = {$_.ElapsedMilliseconds}},
-        @{N = "Ticks"; E = {$_.ElapsedTicks}}
+    "requestTime" = $timer.elapsed
     "rawAudio" = $a
     "metadata" = $voiceInfo
 }
