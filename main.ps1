@@ -6,7 +6,7 @@ Param(
         [string]$voice,
 
     [parameter(Mandatory = $true, HelpMessage = "Text to synthesize.", ValueFromPipeline = $true, Position = 2)]
-        [string]$text,
+        $text,
 
     [parameter(Mandatory = $false, HelpMessage = "Audio codec type. (audio, webm, riff, ogg, raw)", Position = 3)]
     [ValidateSet("audio","webm","riff","ogg","raw")]
