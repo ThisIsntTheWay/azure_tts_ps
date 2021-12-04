@@ -1,1 +1,11 @@
+# Simple text
 .\main.ps1 -apiKey .\secret\apiKey -voice "Natasha" -text "Hello world" -codec "webm" -quiet $false
+
+# Multi line document
+.\main.ps1 -apiKey .\secret\apiKey -voice "Natasha" -text (Get-Content .\sample.txt) -codec "webm" -quiet $false
+
+# Piped text
+'Hello World' | .\main.ps1 -apiKey .\secret\apiKey -voice "Natasha" -codec "webm" -quiet $false
+
+# Piped multi line document
+[string](Get-Content .\sample.txt) | .\main.ps1 -apiKey .\secret\apiKey -voice "Natasha" -codec "webm" -quiet $false
