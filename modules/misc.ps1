@@ -25,7 +25,7 @@ function Show-Notification {
         [string]$title = "Alert",
         [string]$level = "Info",
         [int]$expiry = 60,
-        [string]$filePath
+        $filePath
     )
 
     [string]$iconFile = ".\toast\" + $level + ".png"
@@ -39,12 +39,12 @@ function Show-Notification {
     ($rawxml.GetElementsByTagName("text") | ? id -eq "2").AppendChild($RawXml.CreateTextNode($Text)) > $null
     ($rawxml.GetElementsByTagName("image") | ? id -eq "1").src = (Get-Item $iconFile).Fullname
 
-    if ($filePath) { 
+    if ($filePath) {
         # Convert path to # file:///
-        $fileURI = $filepath.fullname -replace "\\", "/" -replace " ", "%20"
+        $fileURI = $filePath.fullname -replace "\\", "/" -replace " ", "%20"
         $fileURI = "file:///" + $fileURI
         
-        $dirURI = $filepath.directory[0].fullname -replace "\\", "/" -replace " ", "%20"
+        $dirURI = $filePath.directory[0].fullname -replace "\\", "/" -replace " ", "%20"
         $dirURI = "file:///" + $dirURI
 
         #https://docs.microsoft.com/en-us/windows/apps/design/shell/tiles-and-notifications/toast-schema#itoastactions
@@ -59,9 +59,9 @@ function Show-Notification {
             $action2.SetAttribute("arguments", $dirURI)
             $action2.SetAttribute("content", "Open folder")
 
-        $actions.AppendChild($action)
-        $actions.AppendChild($action2)
-        ($rawXML.toast).AppendChild($actions)
+        $actions.AppendChild($action) | Out-Null
+        $actions.AppendChild($action2) | Out-Null
+        ($rawXML.toast).AppendChild($actions) | Out-Null
     }
 
     $SerializedXml = New-Object Windows.Data.Xml.Dom.XmlDocument
