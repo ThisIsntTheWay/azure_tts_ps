@@ -5,7 +5,7 @@ Param(
     [parameter(Mandatory = $true, HelpMessage = "Name of voice to use. Uses 'DisplayName' param of .\voiceList.json.", Position = 1)]
         [string]$voice,
 
-    [parameter(Mandatory = $true, HelpMessage = "Text to synthesize.", ValueFromPipeline = $true, Position = 2)]
+    [parameter(Mandatory = $true, HelpMessage = "Text to synthesize, can be pipelined", ValueFromPipeline = $true, Position = 2)]
         $text,
 
     [parameter(Mandatory = $false, HelpMessage = "Audio codec type. (audio, webm, riff, ogg, raw)", Position = 3)]
