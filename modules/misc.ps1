@@ -76,7 +76,7 @@ function Show-Notification {
     $Toast.Group = "Azure Speech Services"
     $Toast.ExpirationTime = [DateTimeOffset]::Now.AddSeconds($expiry)
 
-    $Notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("Azure TTS Services")
+    $Notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("Azure Speech Services")
     if (!($quiet)) {
         $Notifier.Show($Toast);
     }
