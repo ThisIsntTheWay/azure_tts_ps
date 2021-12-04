@@ -1,3 +1,8 @@
+Param(
+    [parameter(Mandatory = $true)]
+        [bool]$quiet
+)
+
 <#
     .SYNOPSIS
         Creates a notification bubble.
@@ -18,7 +23,6 @@
         Warning: Assumes a 'Get-ChildItem' object as its input.
 #>
 function Show-Notification {
-    [cmdletbinding()]
     Param(
         [parameter(Mandatory = $true)]
             [string]$text,
@@ -73,7 +77,9 @@ function Show-Notification {
     $Toast.ExpirationTime = [DateTimeOffset]::Now.AddSeconds($expiry)
 
     $Notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("Azure TTS Services")
-    $Notifier.Show($Toast);
+    if (!($quiet)) {
+        $Notifier.Show($Toast);
+    }
 }
 
 function Write-Log {

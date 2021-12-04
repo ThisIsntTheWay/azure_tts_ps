@@ -13,7 +13,10 @@ Param(
         [string]$Codec = "audio",
 
     [parameter(Mandatory = $false, HelpMessage = "Audio codec quality level. (Zero-indexed)", Position = 4)]
-        [int]$CodecQuality = 0
+        [int]$CodecQuality = 0,
+
+    [parameter(Mandatory = $false, HelpMessage = "Show notification bubbles or not.", Position = 5)]
+        [bool]$Quiet = $false
 )
 
 # ------------------------
@@ -21,7 +24,8 @@ Param(
 # ------------------------
 .".\modules\azure.ps1" -apiRegion "northeurope"
 if (!($?)) { Write-Host "Could not load Azure ps1 module:" -fore red; throw $($error[0].Exception.Message) }
-.".\modules\misc.ps1"
+
+.".\modules\misc.ps1" -quiet $Quiet
 if (!($?)) { Write-Host "Could not load auxilliary ps1 module:" -fore red; throw $($error[0].Exception.Message) }
 
 # ------------------------
@@ -88,6 +92,8 @@ if ($?) {
     if ($?) {
         Show-Notification -title "Request OK" -text "TTS generation successful." -filePath (gci $outFile)
         Write-Log "Successfully wrote '$outfile'."
+
+        Write-Host "Done" -fore green
     } else {
         Show-Notification -title "Could not write file" -text $error[0].exception.message -level "Error"
         Write-Log "Unable to write '$outfile': $($error[0].exception.message)"
@@ -95,3 +101,5 @@ if ($?) {
 } else {
     Write-Log "Request failed: $($error[0].exception.message)"
 }
+
+return $a
