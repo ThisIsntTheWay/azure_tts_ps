@@ -104,7 +104,7 @@ if ($?) {
     if (!(Test-Path ".\output")) { mkdir .\output | out-null }
     $outFile = ".\output\tts${count}_$($voiceInfo.Name).$($voiceCodec.suffix)"
 
-    [io.file]::WriteAllBytes($outFile, $a)
+    [io.file]::WriteAllBytes((gci .\).directory[0].fullname + "\$outFile", $a)
     if ($?) {
         Show-Notification -title "Request OK" -text "TTS generation successful." -filePath (gci $outFile)
         Write-Log "Successfully wrote '$outfile'."
