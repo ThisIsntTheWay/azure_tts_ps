@@ -16,7 +16,6 @@ Param(
         [int]$CodecQuality = 0
 )
 
-
 # ------------------------
 # Module loading
 # ------------------------
@@ -71,7 +70,7 @@ $voiceInfo = [PSCustomObject]@{
     "Locale" = $voiceChoice.locale
     "Gender" = $voiceChoice.gender
     "Name" = $voiceChoice.ShortName
-    "Codec" = $voiceCodec.types[$CodecLevel]
+    "Codec" = $voiceCodec.types[$CodecQuality]
     "Text" = $text
 }
 
