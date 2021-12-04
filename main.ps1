@@ -141,7 +141,11 @@ if ($?) {
 
     [io.file]::WriteAllBytes((gci .\).directory[0].fullname + "\$outFile", $a)
     if ($?) {
-        Show-Notification -title "Request OK" -text "TTS generation successful." -filePath (gci $outFile)
+        if ($a.length -lt 2000) {
+            Show-Notification -Title "Response content abnormal" -Text "Azure has only returned $($a.Length) bytes." -level "warn" -filePath (gci $outFile)
+        } else {
+            Show-Notification -title "Request OK" -text "TTS generation successful." -filePath (gci $outFile)
+        }
         Write-Log "Successfully wrote '$outfile'."
 
         Write-Host "Done" -fore green
