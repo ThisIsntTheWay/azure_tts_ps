@@ -81,8 +81,12 @@ $voiceInfo = [PSCustomObject]@{
 Write-Log "[i] Requesting content with the following info:"
 Write-Log "$($voiceInfo | convertto-json)" $true
 
+$timer =  [system.diagnostics.stopwatch]::StartNew()
+
 $a = Create-AzureTTSAudio $voiceInfo
 if ($?) {
+    $timer.Stop()
+
     $count = 0 + ((gci .\output).count + 1)
 
     if (!(Test-Path ".\output")) { mkdir .\output | out-null }
@@ -104,6 +108,9 @@ if ($?) {
 
 return @{
     "filePath" = (gci $outFile)
+    "requestTime" = $timer | select @{N = "Time"; E = {$_.Elapsed}},
+        @{N = "Millis"; E = {$_.ElapsedMilliseconds}},
+        @{N = "Ticks"; E = {$_.ElapsedTicks}}
     "rawAudio" = $a
     "metadata" = $voiceInfo
 }
