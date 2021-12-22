@@ -137,29 +137,31 @@ function Create-AzureTTSAudio {
             [PSCustomObject]$VoiceInfo
     )
 
+    begin {
     # Assemble SSML
-    $xml = @"
+        $xml = @"
 <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="%LOCALE%">
     <voice name="%NAME%">
         %TEXT%
     </voice>
 </speak>
 "@
-    $SSML = $xml -Replace "%LOCALE%", $VoiceInfo.Locale `
-                -Replace "%NAME%", $VoiceInfo.Name `
-                -Replace "%TEXT%", $VoiceInfo.Text
+        $SSML = $xml -Replace "%LOCALE%", $VoiceInfo.Locale `
+                    -Replace "%NAME%", $VoiceInfo.Name `
+                    -Replace "%TEXT%", $VoiceInfo.Text
 
-    $body = [System.Text.Encoding]::UTF8.GetBytes($SSML)
-
-    $a = Invoke-WebRequest ($ttsURL + "/cognitiveservices/v1") -Method POST -Body $body -Headers @{
-        'Authorization' = (Get-AzureSpeechServiceToken).Auth
-        'Content-Type' = 'application/ssml+xml'
-        'X-Microsoft-OutputFormat' = $voiceInfo.Codec
-    }
-    if (!($?)) {
-        Show-Notification -Title "Voice acquisition failure" -Text $error[0].exception.Message -Level "Error"
-        exit
-    } else {
-        return $a.content
+        $body = [System.Text.Encoding]::UTF8.GetBytes($SSML)
+    } process {
+        $a = Invoke-WebRequest ($ttsURL + "/cognitiveservices/v1") -Method POST -Body $body -Headers @{
+            'Authorization' = (Get-AzureSpeechServiceToken).Auth
+            'Content-Type' = 'application/ssml+xml'
+            'X-Microsoft-OutputFormat' = $voiceInfo.Codec
+        }
+        if (!($?)) {
+            Show-Notification -Title "Voice acquisition failure" -Text $error[0].exception.Message -Level "Error"
+            exit
+        } else {
+            return $a.content
+        }
     }
 }
