@@ -1,3 +1,5 @@
+#Requires -Version 5.0
+
 <#
     .SYNOPSIS
         Synthesizes text to speech using Azure Speech Services.
@@ -42,6 +44,30 @@ if (!($?)) { Write-Host "Could not load Azure ps1 module:" -fore red; throw $($e
 
 .".\modules\misc.ps1" -quiet $Quiet
 if (!($?)) { Write-Host "Could not load auxilliary ps1 module:" -fore red; throw $($error[0].Exception.Message) }
+
+# ------------------------
+# Dependency checks
+# ------------------------
+$targetAssembly = Resolve-Path "TagLibSharp.dll" -ErrorAction SilentlyContinue
+if (!$targetAssembly) {
+    try {
+        Write-Warning "TagLibSharp is missing and will be acquired."
+    
+        $target = ".\tmp_taglibsharp.zip"
+        Invoke-WebRequest "https://globalcdn.nuget.org/packages/taglibsharp.2.2.0.nupkg" -OutFile $target
+        
+        Expand-Archive $target .\tmp_taglibsharpExpand
+        Copy-Item .\tmp_taglibsharpExpand\lib\net45\TagLibSharp.dll .\TagLibSharp.dll
+
+        Remove-Item .\tmp* -recurse -force
+
+        $targetAssembly = Resolve-Path "TagLibSharp.dll" -ErrorAction SilentlyContinue
+    } catch {
+        throw $error[0]
+    }
+}
+
+[System.Reflection.Assembly]::LoadFrom($targetAssembly) | out-null
 
 # ------------------------
 # Variables
@@ -89,18 +115,20 @@ if (!(Test-Path ".\voiceList.json")) {
 $voiceList = Get-Content ".\voiceList.json" | ConvertFrom-Json
 $voiceChoice = $voiceList | where DisplayName -like $voice
 if ($voiceChoice -eq $null) {
-    Create-Notifications -text "Could not locate voice info for '$voice'." -title "Error" -notificationLevel "error"
+    Create-Notifications -text "Could not locate voice info for '$voice'." -title "Unknown voice" -notificationLevel "error"
     exit
 }
 
 # Validate voice codec
 $voiceCodec = $azureTTSAudio.$Codec
 if ($CodecQuality -gt ($voiceCodec.types.count - 1)) {
-    Create-Notifications "Specified codec quality level ($codecQuality) does not resolve to a type of codec '$Codec'." -title Error -notificationLevel "error"
+    Create-Notifications "Specified codec quality level ($codecQuality) does not resolve to a type of codec '$Codec'." -title "Invalid codec quality" -notificationLevel "error"
     Write-Host "Permitted values are: " -fore red
     for ($i = 0; $i -lt $voiceCodec.types.count; $i++) {
-        Write-Host " $i -> $($voiceCodec.types[$i])" -fore red
+        Write-Host " $i > $($voiceCodec.types[$i])" -fore red
     }
+
+    throw
 }
 
 Write-Host "Validation OK, requesting TTS content..." -fore cyan
@@ -147,6 +175,18 @@ if ($?) {
             Show-Notification -title "Request OK" -text "TTS generation successful." -filePath (gci $outFile)
         }
         Write-Log "Successfully wrote '$outfile'."
+
+        # Edit metadata
+        try {
+            $tmp = [TagLib.File]::Create($outfile)
+            $tmp.Tag.Title = "Azure TTS Audio"
+            $tmp.Tag.Subtitle = $voiceInfo.Text
+            $tmp.Tag.Performers = @($voiceInfo.Name)
+
+            $tmp.Save()
+        } catch {
+            Write-Warning "Could not edit metadata of file: '$($error[0].exception)'."
+        }
 
         Write-Host "Done" -fore green
     } else {
