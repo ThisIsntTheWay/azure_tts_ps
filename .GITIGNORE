@@ -2,3 +2,4 @@ secret/
 log/
 output/
 sample.txt
+*.dll
