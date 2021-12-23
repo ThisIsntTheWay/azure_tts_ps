@@ -26,7 +26,7 @@ Param(
     [ValidateSet("audio","webm","riff","ogg","raw")]
         [string]$Codec = "audio",
 
-    [parameter(Mandatory = $false, HelpMessage = "Audio codec quality level. (Zero-indexed)", Position = 4)]
+    [parameter(Mandatory = $false, HelpMessage = "Audio codec quality level, zero-indexed. Use 'max' for highest available codec quality.", Position = 4)]
         $CodecQuality = 0,
 
     [parameter(Mandatory = $false, HelpMessage = "Show notification bubbles or not.", Position = 5)]
@@ -98,7 +98,7 @@ if ((Get-ItemProperty $scriptRegData).billableCharactersStandard -eq $null) {
 if(!($?)) {
     Create-Notifications -text "Could not read API key: $($error[0].exception.Message)" -title "Error" -notificationLevel "error" -noBubble $true
     Show-Notification -text $error[0].exception.Message -Title "Could not read API key" -level "error"
-    return
+    throw "Could not read API key."
 }
 
 # Get voice list
@@ -116,20 +116,25 @@ $voiceList = Get-Content ".\voiceList.json" | ConvertFrom-Json
 $voiceChoice = $voiceList | where DisplayName -like $voice
 if ($voiceChoice -eq $null) {
     Create-Notifications -text "Could not locate voice info for '$voice'." -title "Unknown voice" -notificationLevel "error"
-    exit
+    throw "Could not locate voice info for '$voice'."
 }
 
 # Validate voice codec
 $voiceCodec = $azureTTSAudio.$Codec
 if ($codecQuality -notlike "max") {
+    if (!($CodecQuality -is [int])) {
+        Create-Notifications "Specified codec quality level ($codecQuality) is not a number" -title "Codec quality not a number" -notificationLevel "error"
+        throw "Codec quality is not a number."
+    }
+
     if ($CodecQuality -gt ($voiceCodec.types.count - 1)) {
-        Create-Notifications "Specified codec quality level ($codecQuality) does not resolve to a type of codec '$Codec'." -title "Invalid codec quality" -notificationLevel "error"
+        Create-Notifications "Specified codec quality level ($codecQuality) for '$Codec' is out of range." -title "Invalid codec quality" -notificationLevel "error"
         Write-Host "Permitted values are: " -fore red
         for ($i = 0; $i -lt $voiceCodec.types.count; $i++) {
             Write-Host " $i > $($voiceCodec.types[$i])" -fore red
         }
 
-        throw
+        throw "Invalid codec quality '$CodecQuality' specified."
     }
 } else {
     $codecQuality = $voiceCodec.types.count - 1
@@ -199,6 +204,7 @@ if ($?) {
     }
 } else {
     Write-Log "Request failed: $($error[0].exception.message)"
+    throw $error[0].exception.message
 }
 
 return @{
