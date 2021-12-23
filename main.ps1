@@ -27,7 +27,7 @@ Param(
         [string]$Codec = "audio",
 
     [parameter(Mandatory = $false, HelpMessage = "Audio codec quality level. (Zero-indexed)", Position = 4)]
-        [int]$CodecQuality = 0,
+        $CodecQuality = 0,
 
     [parameter(Mandatory = $false, HelpMessage = "Show notification bubbles or not.", Position = 5)]
         [bool]$Quiet = $false,
@@ -121,14 +121,18 @@ if ($voiceChoice -eq $null) {
 
 # Validate voice codec
 $voiceCodec = $azureTTSAudio.$Codec
-if ($CodecQuality -gt ($voiceCodec.types.count - 1)) {
-    Create-Notifications "Specified codec quality level ($codecQuality) does not resolve to a type of codec '$Codec'." -title "Invalid codec quality" -notificationLevel "error"
-    Write-Host "Permitted values are: " -fore red
-    for ($i = 0; $i -lt $voiceCodec.types.count; $i++) {
-        Write-Host " $i > $($voiceCodec.types[$i])" -fore red
-    }
+if ($codecQuality -notlike "max") {
+    if ($CodecQuality -gt ($voiceCodec.types.count - 1)) {
+        Create-Notifications "Specified codec quality level ($codecQuality) does not resolve to a type of codec '$Codec'." -title "Invalid codec quality" -notificationLevel "error"
+        Write-Host "Permitted values are: " -fore red
+        for ($i = 0; $i -lt $voiceCodec.types.count; $i++) {
+            Write-Host " $i > $($voiceCodec.types[$i])" -fore red
+        }
 
-    throw
+        throw
+    }
+} else {
+    $codecQuality = $voiceCodec.types.count - 1
 }
 
 Write-Host "Validation OK, requesting TTS content..." -fore cyan
