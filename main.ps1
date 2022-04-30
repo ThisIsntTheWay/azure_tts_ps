@@ -157,7 +157,7 @@ Write-Log "$($voiceInfo | convertto-json)" $true
 
 $timer =  [system.diagnostics.stopwatch]::StartNew()
 
-$a = Create-AzureTTSAudio $voiceInfo
+$ttsAudioData = Create-AzureTTSAudio $voiceInfo
 if ($?) {
     $timer.Stop()
 
@@ -176,10 +176,11 @@ if ($?) {
     if (!(Test-Path ".\output")) { mkdir .\output | out-null }
     $outFile = ".\output\tts${count}_$($voiceInfo.Name).$($voiceCodec.suffix)"
 
-    [io.file]::WriteAllBytes((gci .\).directory[0].fullname + "\$outFile", $a)
+	$targetFilename = (gci .\).directory[0].fullname + "\$outFile"
+    [io.file]::WriteAllBytes($targetFilename, $ttsAudioData)
     if ($?) {
-        if ($a.length -lt 2000) {
-            Show-Notification -Title "Response content abnormal" -Text "Azure has only returned $($a.Length) bytes." -level "warn" -filePath (gci $outFile)
+        if ($ttsAudioData.length -lt 2000) {
+            Show-Notification -Title "Response content abnormal" -Text "Azure has only returned $($ttsAudioData.Length) bytes." -level "warn" -filePath (gci $outFile)
         } else {
             Show-Notification -title "Request OK" -text "TTS generation successful." -filePath (gci $outFile)
         }
@@ -210,6 +211,6 @@ if ($?) {
 return @{
     "filePath" = (gci $outFile)
     "requestTime" = $timer.elapsed
-    "rawAudio" = $a
+    "rawAudio" = $ttsAudioData
     "metadata" = $voiceInfo
 }
